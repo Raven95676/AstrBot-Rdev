@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import ModuleType
-from typing import List, Dict
+from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 from astrbot.core.config import AstrBotConfig
 
@@ -22,18 +22,18 @@ class StarMetadata:
     author: str  # 插件作者
     desc: str  # 插件简介
     version: str  # 插件版本
-    repo: str = None  # 插件仓库地址
+    repo: Optional[str] = None  # 插件仓库地址
 
-    star_cls_type: type = None
+    star_cls_type: Optional[type] = None
     """插件的类对象的类型"""
-    module_path: str = None
+    module_path: Optional[str] = None
     """插件的模块路径"""
 
-    star_cls: object = None
+    star_cls: Optional[object] = None
     """插件的类对象"""
-    module: ModuleType = None
+    module: Optional[ModuleType] = None
     """插件的模块对象"""
-    root_dir_name: str = None
+    root_dir_name: Optional[str] = None
     """插件的目录名称"""
     reserved: bool = False
     """是否是 AstrBot 的保留插件"""
@@ -41,11 +41,28 @@ class StarMetadata:
     activated: bool = True
     """是否被激活"""
 
-    config: AstrBotConfig = None
+    config: Optional[AstrBotConfig] = None
     """插件配置"""
+
+    dependencies: Optional[List[DependencyInfo]] = None
+    """插件的依赖信息"""
 
     star_handler_full_names: List[str] = field(default_factory=list)
     """注册的 Handler 的全名列表"""
 
     def __str__(self) -> str:
         return f"StarMetadata({self.name}, {self.desc}, {self.version}, {self.repo})"
+
+
+@dataclass(slots=True)
+class DependencyInfo:
+    """描述一个插件的依赖信息"""
+
+    name: str
+    """依赖的插件名称"""
+    version: str
+    """依赖的插件版本要求"""
+    repo: str
+    """依赖的插件仓库地址"""
+    optional: bool
+    """是否是可选依赖"""

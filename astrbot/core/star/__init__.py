@@ -1,4 +1,4 @@
-from .star import StarMetadata
+from .star import StarMetadata, DependencyInfo
 from .star_manager import PluginManager
 from .context import Context
 from astrbot.core.provider import Provider
@@ -27,4 +27,11 @@ class Star(CommandParserMixin):
         pass
 
 
-__all__ = ["Star", "StarMetadata", "PluginManager", "Context", "Provider"]
+__all__ = [
+    "Star",
+    "StarMetadata",
+    "DependencyInfo",
+    "PluginManager",
+    "Context",
+    "Provider",
+]
