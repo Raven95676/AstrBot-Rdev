@@ -26,7 +26,6 @@ class DependencyAnalysis:
     def __init__(self) -> None:
         """初始化依赖分析器"""
         self._graph = nx.DiGraph()
-        self._cached_order = None
 
     @staticmethod
     @lru_cache(maxsize=256)
@@ -141,7 +140,6 @@ class DependencyAnalysis:
             plugins: 插件元数据列表
         """
         self._graph = nx.DiGraph()
-        self._cached_order = None
 
         active_plugins = {p.name: p for p in plugins if p.activated}
 
@@ -160,15 +158,10 @@ class DependencyAnalysis:
 
         self._graph.add_edges_from(edges)
 
-        try:
-            if not nx.is_directed_acyclic_graph(self._graph):
-                cycles = list(nx.simple_cycles(self._graph))
-                cycle_str = "; ".join(" -> ".join(cycle) for cycle in cycles)
-                raise ValueError(f"插件存在循环依赖，无法确定加载顺序: {cycle_str}")
-
-            self._cached_order = list(nx.topological_sort(self._graph))
-        except nx.NetworkXUnfeasible:
-            raise ValueError("计算拓扑排序时出现意外错误")
+        if not nx.is_directed_acyclic_graph(self._graph):
+            cycles = list(nx.simple_cycles(self._graph))
+            cycle_str = "; ".join(" -> ".join(cycle) for cycle in cycles)
+            raise ValueError(f"插件存在循环依赖，无法确定加载顺序: {cycle_str}")
 
     def get_load_order(self) -> List[str]:
         """
@@ -177,18 +170,15 @@ class DependencyAnalysis:
         Returns:
             List[str]: 插件的加载顺序列表
         """
-        if self._cached_order is None:
-            if not self._graph:
-                return []
+        if not self._graph:
+            return []
 
-            if not nx.is_directed_acyclic_graph(self._graph):
-                cycles = list(nx.simple_cycles(self._graph))
-                cycle_str = "; ".join(" -> ".join(cycle) for cycle in cycles)
-                raise ValueError(f"插件存在循环依赖，无法确定加载顺序: {cycle_str}")
+        if not nx.is_directed_acyclic_graph(self._graph):
+            cycles = list(nx.simple_cycles(self._graph))
+            cycle_str = "; ".join(" -> ".join(cycle) for cycle in cycles)
+            raise ValueError(f"插件存在循环依赖，无法确定加载顺序: {cycle_str}")
 
-            self._cached_order = list(nx.topological_sort(self._graph))
-
-        return self._cached_order
+        return list(nx.topological_sort(self._graph))
 
     def get_plugin_deps(self, plugin_name: str) -> List[str]:
         """
