@@ -73,3 +73,7 @@ class StarMetadata:
             else:
                 # 如果没有明确配置，默认为启用
                 self.supported_platforms[platform_id] = True
+
+
+class DependencyInfo:
+    pass
